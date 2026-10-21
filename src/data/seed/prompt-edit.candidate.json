@@ -1,0 +1,159 @@
+{
+  "id": "prompt-edit-candidate",
+  "name": "Credit score advisor",
+  "input": "My credit score is 640. I have two old credit cards and a $4,000 balance. How can I improve it?",
+  "output": "Open several new credit accounts to increase your total limit.",
+  "createdAt": "2026-10-21T11:08:42Z",
+  "tags": [
+    "credit-advisor",
+    "staging",
+    "candidate"
+  ],
+  "evalScores": [
+    {
+      "metric": "Advice Accuracy",
+      "score": 0.58,
+      "threshold": 0.7
+    },
+    {
+      "metric": "Tool Correctness",
+      "score": 1,
+      "threshold": 0.8
+    }
+  ],
+  "root": {
+    "id": "root",
+    "name": "advisor_orchestrator",
+    "type": "AGENT",
+    "parentId": null,
+    "startMs": 0,
+    "endMs": 14040,
+    "children": [
+      {
+        "id": "ops",
+        "name": "credit_analyst_agent",
+        "type": "AGENT",
+        "parentId": "root",
+        "startMs": 50,
+        "endMs": 12410,
+        "children": [
+          {
+            "id": "knowledge",
+            "name": "load_credit_context",
+            "type": "FUNC",
+            "parentId": "ops",
+            "startMs": 70,
+            "endMs": 280,
+            "input": {
+              "domain": "consumer_credit"
+            },
+            "output": {
+              "scoring_model": "FICO",
+              "version": "8"
+            }
+          },
+          {
+            "id": "retrieval",
+            "name": "credit_policy_search",
+            "type": "RETRIEVER",
+            "parentId": "ops",
+            "startMs": 300,
+            "endMs": 1080,
+            "args": {
+              "query": "credit score utilization account age"
+            },
+            "output": {
+              "document_ids": [
+                "fico-08",
+                "cfpb-12"
+              ],
+              "matches": 2
+            }
+          },
+          {
+            "id": "extra",
+            "name": "supplemental_retrieval",
+            "type": "RETRIEVER",
+            "parentId": "ops",
+            "startMs": 1080,
+            "endMs": 1320,
+            "args": {
+              "query": "aggressive credit improvement tactics"
+            },
+            "output": {
+              "document_ids": [
+                "unverified-forum-4"
+              ]
+            }
+          },
+          {
+            "id": "history",
+            "name": "bureau_score_lookup",
+            "type": "TOOL",
+            "parentId": "ops",
+            "startMs": 1100,
+            "endMs": 1540,
+            "args": {
+              "operation": "credit_history",
+              "region": "eu-west",
+              "account": "demo-482"
+            },
+            "output": {
+              "oldest_account_years": 0,
+              "keep_old_cards": false
+            }
+          },
+          {
+            "id": "utilization",
+            "name": "bureau_score_lookup",
+            "type": "TOOL",
+            "parentId": "ops",
+            "startMs": 1560,
+            "endMs": 2030,
+            "args": {
+              "operation": "utilization",
+              "region": "us-east",
+              "account": "demo-482"
+            },
+            "output": {
+              "current_pct": 64,
+              "target_pct": 30,
+              "recommendation": "pay_down_balance"
+            }
+          },
+          {
+            "id": "response",
+            "name": "generate_advice",
+            "type": "LLM",
+            "parentId": "ops",
+            "startMs": 2100,
+            "endMs": 10410,
+            "model": "gpt-4.1",
+            "tokensIn": 847,
+            "tokensOut": 1203,
+            "costUsd": 0.011318,
+            "input": {
+              "task": "Generate grounded credit advice"
+            },
+            "output": "Request more credit immediately based on the additional retrieved advice."
+          },
+          {
+            "id": "formatter",
+            "name": "advice_formatter",
+            "type": "FUNC",
+            "parentId": "ops",
+            "startMs": 10450,
+            "endMs": 12410,
+            "args": {
+              "format": "advice_card"
+            },
+            "output": {
+              "summary": "Open multiple new credit accounts.",
+              "confidence": 0.58
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
